@@ -2,77 +2,73 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-//DECORATOR
-function enumerable(value: boolean) {
-  return function (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor) {
-        
-        console.log('a')
+//DECORATORS
+function logable() {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+       const original = descriptor.value;
+
+        descriptor.value = function (args: any[]) {
+        console.log('called:', propertyKey)
+        original.call(this);
+    }  
   };
 }
 
 //MIXIN
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-// A mixin that adds a property
-function Timestamped<TBase extends Constructor>(Base: TBase) {
-  return class extends Base {
-    timestamp = Date.now();
-  };
-}
-
 // a mixin that adds a property and methods
 function Activatable<TBase extends Constructor>(Base: TBase) {
-  return class extends Base {
+   class MixinClass extends Base {
+
     isActivated = false;
 
-    @enumerable(false)
-    activate() {
+    @logable()
+    activate() { 
       this.isActivated = true;
     }
 
+    @logable()
     deactivate() {
       this.isActivated = false;
     }
   };
+
+  return MixinClass;
 }
 
 class User {
   name = '';
 }
 
-const TimestampedUser = Timestamped(User);
 
-const TimestampedActivatableUser = Timestamped(Activatable(User));
-
-const timestampedUserExample = new TimestampedUser();
-console.log(timestampedUserExample.timestamp);
-
-const timestampedActivatableUserExample = new TimestampedActivatableUser();
-timestampedActivatableUserExample.activate();
-
-console.log(timestampedActivatableUserExample.timestamp);
-console.log(timestampedActivatableUserExample.isActivated);
-
-
-
-
-type Getters<Type> = {
-    [Property in keyof Type as `get${Capitalize<string & Property>}`]: () => Type[Property]
-};
- 
-interface Person {
+type UserType = {
+    id: number;
     name: string;
     age: number;
-    location: string;
+};
+
+
+//MAPPED
+type CreateImutableType<Type> = {
+  +readonly [Property in keyof Type]: Type[Property];
+};
+
+const ActivatableUser = Activatable(User);
+type ImutableUserType = CreateImutableType<UserType>;
+
+var imutableUser: ImutableUserType = {
+   id: 10,
+   name: "Nick",
+   age: 22
 }
- 
-type LazyPerson = Getters<Person>;
- 
-class a implements Person
 
+console.log(imutableUser);
 
-console.log(a);
+const activatableUserExample = new ActivatableUser();
+activatableUserExample.activate();
 
+console.log(activatableUserExample.isActivated);
 
 function App() {
   return (
