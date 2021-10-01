@@ -2,10 +2,10 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-//DECORATORS
+//DECORATOR
 function logable() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-       const original = descriptor.value;
+        const original = descriptor.value;
 
         descriptor.value = function (args: any[]) {
         console.log('called:', propertyKey)
@@ -19,7 +19,7 @@ type Constructor<T = {}> = new (...args: any[]) => T;
 
 // a mixin that adds a property and methods
 function Activatable<TBase extends Constructor>(Base: TBase) {
-   class MixinClass extends Base {
+   class ActivatableClass extends Base {
 
     isActivated = false;
 
@@ -34,7 +34,7 @@ function Activatable<TBase extends Constructor>(Base: TBase) {
     }
   };
 
-  return MixinClass;
+  return ActivatableClass;
 }
 
 class User {
